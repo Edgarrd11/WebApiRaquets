@@ -16,9 +16,9 @@ namespace WebApiRaquets.Controllers
         }
 
         [HttpGet]
-        public async Task<List<Raquet>> Get()
+        public async Task<ActionResult<List<Raquet>>> Get()
         {
-            return await dbContext.Raquets.ToListAsync();
+            return await dbContext.Raquets.Include(x => x.brands).ToListAsync();
             /*  return new List<Raquet>()
               {
                   new Raquet() { Id = 1, Name = "Pro Staff"}, <- Codigo de ejemplo

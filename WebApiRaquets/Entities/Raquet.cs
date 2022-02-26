@@ -5,6 +5,6 @@
         public int Id { get; set; }
         public string Name { get; set; }
 
-        public List<Brand> brand { get; set; }
+        public List<Brand> brands { get; set; }
     }
 }

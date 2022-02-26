@@ -28,7 +28,7 @@ namespace WebApiRaquets.Controllers
         [HttpPost]
         public async Task<ActionResult> Post(Brand brand)
         {
-            var brandExist = await dbContext.Brands.AnyAsync(x => x.Id == brand.RaquetId);
+            var brandExist = await dbContext.Raquets.AnyAsync(x => x.Id == brand.RaquetId);
           
             if (!brandExist)
             {
