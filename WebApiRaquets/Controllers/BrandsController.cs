@@ -14,12 +14,13 @@ namespace WebApiRaquets.Controllers
             this.dbContext = context;
         }
         [HttpGet]
+        [HttpGet("/brand-list")]// brand-list
         public async Task<ActionResult<List<Brand>>> GetAll()
         {
             return await dbContext.Brands.ToListAsync();
         }
 
-        [HttpGet("{id:int}")]//permite obtener informacion de una marca en especifico
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<Brand>> GetById(int id)
         {
             return await dbContext.Brands.FirstOrDefaultAsync(x => x.Id == id);//permite envia el primer registro
