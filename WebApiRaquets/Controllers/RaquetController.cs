@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiRaquets.Entities;
+using WebApiRaquets.Services;
 
 namespace WebApiRaquets.Controllers
 {
@@ -9,17 +10,55 @@ namespace WebApiRaquets.Controllers
     public class RaquetController : ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
+        private readonly IService service;
+        private readonly ServiceTransient serviceTransient;
+        private readonly ServiceScoped serviceScoped;
+        private readonly ServiceSingleton serviceSingleton;
+        private readonly ILogger<RaquetController> logger;
 
-        public RaquetController(ApplicationDbContext context)
+        public RaquetController(ApplicationDbContext context,IService service, ServiceTransient serviceTransient, ServiceScoped serviceScoped,
+            ServiceSingleton serviceSingleton, ILogger<RaquetController> logger)
         {
             this.dbContext = context;
+            this.service = service;
+            this.serviceTransient = serviceTransient;
+            this.serviceScoped = serviceScoped;
+            this.serviceSingleton = serviceSingleton;
+            this.logger = logger;
         }
+        [HttpGet("GUID")]
+        public ActionResult ObtenerGuid()
+        {
+            return Ok(new
+            {
+                RaquetControllerTransient = serviceTransient.guid,
+                ServiceA_Transient = service.GetTransient(),
+                RaquetControllerScoped = serviceScoped.guid,
+                ServiceA_Scoped = service.GetScoped(),
+                RaquetControllerSingleton = serviceSingleton.guid,
+                ServiceA_Singleton = service.GetSingleton()
+            });
+        }
+
+
+
 
         [HttpGet]// api/raquets
         [HttpGet("list")]// api/raquet/list
         [HttpGet("/raquet-list")]// raquet-list
         public async Task<ActionResult<List<Raquet>>> Get()
         {
+            //* - Niveles de logs - 
+            // Critical
+            // Error
+            // Warning
+            // Information
+            // Debug
+            // Trace
+            // *//
+            logger.LogInformation("Se obtiene el listado de raquetas");
+            logger.LogWarning("Mensaje de prueba warning");
+            service.EjecutarJob();
             return await dbContext.Raquets.Include(x => x.brands).ToListAsync();
             /*  return new List<Raquet>()
               {
@@ -72,6 +111,13 @@ namespace WebApiRaquets.Controllers
         [HttpPost]
         public async Task<ActionResult> Post([FromBody]Raquet raquet)
         {
+            var raquetExist= await dbContext.Raquets.AnyAsync(x => x.Name == raquet.Name);
+
+            if (raquetExist)
+            {
+                return BadRequest("This raquet alredy exist");
+            }
+
             dbContext.Add(raquet);
             await dbContext.SaveChangesAsync();
             return Ok();
