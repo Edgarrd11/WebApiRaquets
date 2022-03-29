@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiRaquets.Entities;
+using WebApiRaquets.Filters;
 using WebApiRaquets.Services;
 
 namespace WebApiRaquets.Controllers
 {
     [ApiController]
     [Route("api/raquets")]//http://localhost:8000/api/raquets
+    //[Authorize]
     public class RaquetController : ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
@@ -27,6 +30,8 @@ namespace WebApiRaquets.Controllers
             this.logger = logger;
         }
         [HttpGet("GUID")]
+        [ResponseCache(Duration = 10)]
+        [ServiceFilter(typeof(FiltroDeAccion))]
         public ActionResult ObtenerGuid()
         {
             return Ok(new
@@ -46,6 +51,8 @@ namespace WebApiRaquets.Controllers
         [HttpGet]// api/raquets
         [HttpGet("list")]// api/raquet/list
         [HttpGet("/raquet-list")]// raquet-list
+        //[ResponseCache(Duration = 15)]
+        //[Authorize]
         public async Task<ActionResult<List<Raquet>>> Get()
         {
             //* - Niveles de logs - 
@@ -56,6 +63,7 @@ namespace WebApiRaquets.Controllers
             // Debug
             // Trace
             // *//
+            throw new NotImplementedException();
             logger.LogInformation("Se obtiene el listado de raquetas");
             logger.LogWarning("Mensaje de prueba warning");
             service.EjecutarJob();

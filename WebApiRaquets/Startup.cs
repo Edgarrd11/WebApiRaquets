@@ -4,6 +4,8 @@ using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using WebApiRaquets.Middlewares;
 using WebApiRaquets.Services;
+using WebApiRaquets.Filters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace WebApiRaquets
 {
@@ -18,8 +20,16 @@ namespace WebApiRaquets
 
         public void ConfigureServuces(IServiceCollection services) 
         {
+
+            /*
             services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle*/
+            services.AddControllers(opciones =>
+            {
+                opciones.Filters.Add(typeof(FiltroDeExcepcion));
+            }).AddJsonOptions(x =>
+            x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));
             // - - - - - - - - - - - 
@@ -28,7 +38,11 @@ namespace WebApiRaquets
             services.AddScoped<ServiceScoped>();
             services.AddSingleton<ServiceSingleton>();
             // - -  - - - - - - - - - -
+            services.AddTransient<FiltroDeAccion>();
+            services.AddHostedService<EscribirEnArchivo>();
+            services.AddResponseCaching();
 
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c => 
             {
@@ -69,6 +83,7 @@ namespace WebApiRaquets
             //Metodo para utilizar la clase middleware sin exponer la clase. 
             app.UseResponseHttpMiddleware();
 
+            
 
             app.Map("/maping", app =>
             {
@@ -90,6 +105,8 @@ namespace WebApiRaquets
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseResponseCaching();
 
             app.UseAuthorization();
 
