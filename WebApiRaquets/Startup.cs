@@ -40,6 +40,7 @@ namespace WebApiRaquets
             // - -  - - - - - - - - - -
             services.AddTransient<FiltroDeAccion>();
             services.AddHostedService<EscribirEnArchivo>();
+           // services.AddHostedService<EscribirEnArchivoT3>();
             services.AddResponseCaching();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();

@@ -13,6 +13,7 @@ namespace WebApiRaquets.Controllers
     public class RaquetController : ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
+        private readonly IWebHostEnvironment env;//añadi esto para escribir
         private readonly IService service;
         private readonly ServiceTransient serviceTransient;
         private readonly ServiceScoped serviceScoped;
@@ -20,7 +21,7 @@ namespace WebApiRaquets.Controllers
         private readonly ILogger<RaquetController> logger;
 
         public RaquetController(ApplicationDbContext context,IService service, ServiceTransient serviceTransient, ServiceScoped serviceScoped,
-            ServiceSingleton serviceSingleton, ILogger<RaquetController> logger)
+            ServiceSingleton serviceSingleton, ILogger<RaquetController> logger, IWebHostEnvironment env)//aca tambien 
         {
             this.dbContext = context;
             this.service = service;
@@ -28,6 +29,7 @@ namespace WebApiRaquets.Controllers
             this.serviceScoped = serviceScoped;
             this.serviceSingleton = serviceSingleton;
             this.logger = logger;
+            this.env = env;
         }
         [HttpGet("GUID")]
         [ResponseCache(Duration = 10)]
@@ -63,10 +65,10 @@ namespace WebApiRaquets.Controllers
             // Debug
             // Trace
             // *//
-            throw new NotImplementedException();
-            logger.LogInformation("Se obtiene el listado de raquetas");
-            logger.LogWarning("Mensaje de prueba warning");
-            service.EjecutarJob();
+           // throw new NotImplementedException();
+            //logger.LogInformation("Se obtiene el listado de raquetas");
+            //logger.LogWarning("Mensaje de prueba warning");
+            //service.EjecutarJob();
             return await dbContext.Raquets.Include(x => x.brands).ToListAsync();
             /*  return new List<Raquet>()
               {
@@ -102,6 +104,12 @@ namespace WebApiRaquets.Controllers
             return raquet;
         }
 
+        /*
+         2.- Modificar controlador principal método GET (obtener por nombre) deberemos de guardar 
+            en un archivo TXT (registroConsultado.txt) el registro que nos trae la base de datos 
+            al ejecutar el action.
+         
+         */
         [HttpGet("{name}")]
         public async Task<ActionResult<Raquet>> Get([FromRoute] string name) 
         {
@@ -111,22 +119,41 @@ namespace WebApiRaquets.Controllers
             {
                 return NotFound();
             }
+
+            string nombreArchivo = "registroConsultado.txt";
+            string date = DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss");
+            string saveMsg = $" Raquet getting register \n Name: {raquet.Name}\n Date: {date}";
+            var ruta = $@"{env.ContentRootPath}\wwwroot\{nombreArchivo}";
+            using (StreamWriter writer = new StreamWriter(ruta, append: true)) { writer.WriteLine(saveMsg); }
+
+
             return raquet;
         }
 
 
-
+        /*
+         1.- Modificar controlador principal método POST, deberemos de guardar en un archivo TXT 
+            (nuevosRegistros.txt) los datos del registro que creamos en base de datos.
+         */
         [HttpPost]
         public async Task<ActionResult> Post([FromBody]Raquet raquet)
         {
-            var raquetExist= await dbContext.Raquets.AnyAsync(x => x.Name == raquet.Name);
+            var raquetExist = await dbContext.Raquets.AnyAsync(x => x.Name == raquet.Name);
 
             if (raquetExist)
             {
                 return BadRequest("This raquet alredy exist");
             }
 
+            string nombreArchivo = "nuevosRegistros.txt";
+            string date = DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss");
+            string saveMsg = $" Raquet register \n Name: {raquet.Name}\n Date: {date}";
+            var ruta = $@"{env.ContentRootPath}\wwwroot\{nombreArchivo}";
+            using (StreamWriter writer = new StreamWriter(ruta, append: true)) { writer.WriteLine(saveMsg); }
+
+
             dbContext.Add(raquet);
+
             await dbContext.SaveChangesAsync();
             return Ok();
         }
